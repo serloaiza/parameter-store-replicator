@@ -1,0 +1,29 @@
+org: serloaiza
+app: parameter-store-replicator
+service: parameter-store-replicator
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ssm:GetParameters"
+        - "ssm:GetParameter"
+        - "ssm:PutParameter"
+        - "ssm:DeleteParameter"
+        - "ssm:DeleteParameters"
+      Resource: "*"
+  environment:
+    AWS_TARGET_REGION: ${opt:target-region}
+
+functions:
+  replicate:
+    handler: handler.replicate
+    events:
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.ssm"
+            detail-type:
+              - "Parameter Store Change"
